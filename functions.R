@@ -71,6 +71,26 @@ close.eigen = function(M,Prev){
 ############## ############## ############## ############## 
 ############## FDPCA############## ############## 
 ############## ############## ############## ############## 
+
+FDPCA_global<-function(X, Ndpc = 2){
+
+  res.dpca = dpca(X, Ndpc =2,freq=(-10:10/10) * pi)
+  filter_dpca=res.dpca$spec.density$operators  ## f(w) : p *p at each w 
+ 
+ eigenvalue_f<-matrix(nrow= dim(filter_dpca)[3], ncol=Ndpc)
+ eigenvector_f<-array(NA,  c(dim(filter_dpca)[3],ncol(X), Ndpc) )
+ 	for(w in 1:dim(filter_dpca)[3]){
+ 		eigenvector_f[w,  , ]= prcomp(filter_dpca[,,w])$rotation[, 1: Ndpc]  ## 
+ 		eigenvalue_f[w,]= (prcomp(filter_dpca[,,w])$sdev[ 1: Ndpc])^2   ## w*q
+ 	}
+  yhat_dpca=dpca.KLexpansion(X, res.dpca$filter)
+  
+  return(list(freq=res.dpca$spec.density$freq, eigenvector_f =eigenvector_f , eigenvalue_f =eigenvalue_f , yhat_dpca =yhat_dpca))
+
+}
+
+
+
 FDPCA<-function(X,q= ncol(X)){
 
   T=nrow(X)
